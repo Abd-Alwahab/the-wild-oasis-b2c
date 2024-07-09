@@ -1,7 +1,8 @@
 import { ReactNode } from "react";
-import Navigation from "./components/Navgation";
+import Navigation from "./_components/Navgation";
 import { Metadata } from "next";
-import Logo from "./components/Logo";
+import Logo from "./_components/Logo";
+import "@/app/_styles/globals.css";
 
 export const metadata: Metadata = {
   title: "Next.js",
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>
+      <body className="bg-primary-950 text-primary-100 min-h-screen">
         <header>
           <Logo />
           <Navigation />
