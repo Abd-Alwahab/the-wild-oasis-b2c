@@ -1,8 +1,9 @@
+import { Tables } from "@/database.types";
 import { getCabins } from "../_lib/data-service";
 import CabinCard from "./CabinCard";
 
 export async function CabinList() {
-  const cabins = await getCabins();
+  const cabins: Array<Tables<"cabins">> = await getCabins();
 
   if (!cabins?.length) return null;
   return (
