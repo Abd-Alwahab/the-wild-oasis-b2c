@@ -1,8 +1,10 @@
-import { getCabin } from "@/app/_lib/data-service";
+import { getCabin, getCabins } from "@/app/_lib/data-service";
 import { Tables } from "@/database.types";
 import { EyeSlashIcon, MapPinIcon, UsersIcon } from "@heroicons/react/24/solid";
 import { Metadata, ResolvingMetadata } from "next";
 import Image from "next/image";
+
+export const revalidate = 3600; // 1 hour
 
 type Props = {
   params: {
@@ -19,6 +21,13 @@ export async function generateMetadata(
   return {
     title: `Cabin ${cabin.name}`,
   };
+}
+
+export async function generateStaticPaths() {
+  const cabins = await getCabins();
+  return cabins.map((cabin) => ({
+    params: { cabinId: cabin.id.toString() },
+  }));
 }
 
 export default async function Page({ params }: Props) {
