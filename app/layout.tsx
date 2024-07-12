@@ -5,6 +5,7 @@ import Logo from "./_components/Logo";
 import "@/app/_styles/globals.css";
 import { Josefin_Sans } from "next/font/google";
 import Header from "./_components/Header";
+import { ReservationProvider } from "./context/ReservationContext";
 
 const josefin = Josefin_Sans({
   subsets: ["latin"],
@@ -28,7 +29,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Header />
 
         <div className="flex-1 px-8 py-12 grid">
-          <main className="max-w-7xl mx-auto w-full">{children}</main>
+          <ReservationProvider>
+            <main className="max-w-7xl mx-auto w-full">{children}</main>
+          </ReservationProvider>
         </div>
       </body>
     </html>

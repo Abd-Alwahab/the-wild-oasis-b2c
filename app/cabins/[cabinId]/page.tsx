@@ -1,9 +1,14 @@
+import DateSelector from "@/app/_components/DateSelector";
+import Reservation from "@/app/_components/Reservation";
+import ReservationForm from "@/app/_components/ReservationForm";
+import Spinner from "@/app/_components/Spinner";
 import TextExpander from "@/app/_components/TextExpander";
 import { getCabin, getCabins } from "@/app/_lib/data-service";
 import { Tables } from "@/database.types";
 import { EyeSlashIcon, MapPinIcon, UsersIcon } from "@heroicons/react/24/solid";
 import { Metadata, ResolvingMetadata } from "next";
 import Image from "next/image";
+import { Suspense } from "react";
 
 export const revalidate = 3600; // 1 hour
 
@@ -84,11 +89,15 @@ export default async function Page({ params }: Props) {
         </div>
       </div>
 
-      <div>
+      <div className="mb-12 text-accent-600">
         <h2 className="text-5xl font-semibold text-center">
-          Reserve today. Pay on arrival.
+          Reserve {name} today. Pay on arrival.
         </h2>
       </div>
+
+      <Suspense fallback={<Spinner />}>
+        <Reservation cabin={cabin} />
+      </Suspense>
     </div>
   );
 }
