@@ -3,6 +3,8 @@ import Google from "next-auth/providers/google";
 
 export const {
   auth,
+  signIn,
+  signOut,
   handlers: { GET, POST },
 } = NextAuth({
   providers: [
@@ -12,8 +14,12 @@ export const {
     }),
   ],
   callbacks: {
-    authorized({ auth, request }) {
+    authorized({ auth }) {
       return !!auth?.user;
     },
+  },
+
+  pages: {
+    signIn: "/login",
   },
 });
