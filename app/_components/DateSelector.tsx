@@ -1,7 +1,12 @@
 "use client";
 
 import { Tables } from "@/database.types";
-import { isWithinInterval } from "date-fns";
+import {
+  differenceInDays,
+  isPast,
+  isSameDay,
+  isWithinInterval,
+} from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import {
@@ -9,7 +14,8 @@ import {
   useReservation,
 } from "../context/ReservationContext";
 
-function isAlreadyBooked(range: ReservationRange, datesArr: any[]) {
+function isAlreadyBooked(range?: ReservationRange, datesArr?: any[]) {
+  if (!range || !range.to || !range.from || !datesArr) return false;
   return (
     range.from &&
     range.to &&
@@ -27,11 +33,17 @@ type Props = {
 
 function DateSelector({ bookedDates, settings, cabin }: Props) {
   const { range, setRange, resetRange } = useReservation();
-  // CHANGE
-  const regularPrice = 23;
-  const discount = 23;
-  const numNights = 23;
-  const cabinPrice = 23;
+
+  const displayRange = isAlreadyBooked(range, bookedDates)
+    ? { from: undefined, to: undefined }
+    : range;
+
+  const { regularPrice, discount } = cabin;
+  const numNights = differenceInDays(
+    displayRange?.to ?? "",
+    displayRange?.from ?? ""
+  );
+  const cabinPrice = numNights * ((regularPrice ?? 0) - (discount ?? 0));
 
   // SETTINGS
   const { minBookingLength, maxBookingLength } = settings;
@@ -42,7 +54,7 @@ function DateSelector({ bookedDates, settings, cabin }: Props) {
         className="pt-12 place-self-center"
         mode="range"
         onSelect={(range) => setRange({ from: range?.from, to: range?.to })}
-        selected={range}
+        selected={displayRange}
         min={(minBookingLength ?? 0) + 1}
         max={maxBookingLength ?? 0}
         fromMonth={new Date()}
@@ -50,14 +62,20 @@ function DateSelector({ bookedDates, settings, cabin }: Props) {
         toYear={new Date().getFullYear() + 5}
         captionLayout="dropdown"
         numberOfMonths={2}
+        disabled={(currDate) =>
+          isPast(currDate) ||
+          bookedDates.some((date) => isSameDay(date, currDate))
+        }
       />
 
       <div className="flex items-center justify-between px-8 bg-accent-500 text-primary-800 h-[72px]">
         <div className="flex items-baseline gap-6">
           <p className="flex gap-2 items-baseline">
-            {discount > 0 ? (
+            {(discount ?? 0) > 0 ? (
               <>
-                <span className="text-2xl">${regularPrice - discount}</span>
+                <span className="text-2xl">
+                  ${(regularPrice ?? 0) - (discount ?? 0)}
+                </span>
                 <span className="line-through font-semibold text-primary-700">
                   ${regularPrice}
                 </span>

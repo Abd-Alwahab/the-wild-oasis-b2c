@@ -89,11 +89,49 @@ export async function updateBookingAction(formData: FormData) {
     .single();
 
   if (error) {
-    console.error(error);
     throw new Error("Booking could not be updated");
   }
 
   revalidatePath("/account/reservations");
   revalidatePath(`/account/reservations/edit/${bookingId}`);
   redirect("/account/reservations");
+}
+
+export async function createBookingAction(
+  bookingData: any,
+  formData: FormData
+) {
+  const session = await auth();
+  if (!session) throw new Error("You must be signed in");
+
+  const currentGuestBookings = await getBookings(
+    (session?.user as any)?.guestId
+  );
+
+  if (currentGuestBookings.length === 10)
+    throw new Error("You have reached the maximum number of bookings");
+
+  const { numGuests, observations } = Object.fromEntries(formData.entries());
+
+  const bookData = {
+    ...bookingData,
+    numGuests,
+    observations: observations?.slice(0, 1000),
+    extrasPrice: 0,
+    totalPrice: bookingData.cabinPrice,
+    status: "unconfirmed",
+    hasBreakfast: false,
+    isPaid: false,
+    guestId: Number((session?.user as any)?.guestId),
+  };
+
+  const { error } = await supabase.from("bookings").insert([bookData]);
+
+  if (error) {
+    throw new Error("Booking could not be created");
+  }
+
+  revalidatePath(`cabins/${bookingData?.cabinId}`);
+
+  redirect("/thankyou");
 }

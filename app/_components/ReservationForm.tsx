@@ -1,7 +1,12 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { Tables } from "@/database.types";
 import { User } from "next-auth";
+import { useReservation } from "../context/ReservationContext";
+import { differenceInDays } from "date-fns";
+import { createBookingAction } from "../_lib/actions";
+import SubmitButton from "./SubmitButton";
 
 type Props = {
   cabin: Tables<"cabins">;
@@ -9,7 +14,19 @@ type Props = {
 };
 
 function ReservationForm({ cabin, user }: Props) {
-  const { maxCapacity } = cabin;
+  const { range, resetRange } = useReservation();
+  const { maxCapacity, regularPrice, discount, id } = cabin;
+  const numNights = differenceInDays(range?.to ?? "", range?.from ?? "");
+  const cabinPrice = numNights * ((regularPrice ?? 0) - (discount ?? 0));
+  const bookingData = {
+    startDate: range?.from,
+    endDate: range?.to,
+    numNights,
+    cabinPrice,
+    cabinId: id,
+  };
+
+  const createBookingWithData = createBookingAction.bind(null, bookingData);
 
   return (
     <div className="scale-[1.01]">
@@ -21,14 +38,20 @@ function ReservationForm({ cabin, user }: Props) {
             // Important to display google profile images
             referrerPolicy="no-referrer"
             className="h-8 rounded-full"
-            src={user.image}
-            alt={user.name}
+            src={user?.image ?? ""}
+            alt={user?.name ?? ""}
           />
           <p>{user.name}</p>
         </div>
       </div>
 
-      <form className="bg-primary-900 py-10 px-16 text-lg flex gap-5 flex-col">
+      <form
+        action={async (formData) => {
+          await createBookingWithData(formData);
+          resetRange();
+        }}
+        className="bg-primary-900 py-10 px-16 text-lg flex gap-5 flex-col"
+      >
         <div className="space-y-2">
           <label htmlFor="numGuests">How many guests?</label>
           <select
@@ -65,9 +88,11 @@ function ReservationForm({ cabin, user }: Props) {
         <div className="flex justify-end items-center gap-6">
           <p className="text-primary-300 text-base">Start by selecting dates</p>
 
-          <button className="bg-accent-500 px-8 py-4 text-primary-800 font-semibold hover:bg-accent-600 transition-all disabled:cursor-not-allowed disabled:bg-gray-500 disabled:text-gray-300">
-            Reserve now
-          </button>
+          {range?.from && range?.to ? (
+            <SubmitButton pendingLabel="Reserving....">
+              Reserve now
+            </SubmitButton>
+          ) : null}
         </div>
       </form>
     </div>
