@@ -1,5 +1,6 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { auth, signIn, signOut } from "./auth";
 import { getBookings } from "./data-service";
 import { supabase } from "./supabase";
@@ -45,7 +46,7 @@ export async function updateProfileAction(formData: FormData) {
 export async function deleteReservationAction(bookingId: number) {
   const session = await auth();
 
-  if (!session) throw new Error("You must be signed in to update your profile");
+  if (!session) throw new Error("You must be signed in");
 
   const guestBookings = await getBookings((session?.user as any)?.guestId);
 
@@ -62,4 +63,37 @@ export async function deleteReservationAction(bookingId: number) {
   if (error) throw new Error("Booking could not be deleted");
 
   revalidatePath("/account/reservations");
+}
+
+export async function updateBookingAction(formData: FormData) {
+  const session = await auth();
+  if (!session) throw new Error("You must be signed in");
+
+  const guestBookings = await getBookings((session?.user as any)?.guestId);
+
+  const guestBookingsIds = guestBookings.map((booking: any) => booking.id);
+
+  const bookingId = parseInt(formData.get("bookingId") as string, 10);
+
+  if (!guestBookingsIds.includes(bookingId))
+    throw new Error("You are not authorized to update this booking");
+
+  const numGuests = formData.get("numGuests") as string;
+  const observations = formData.get("observations")?.toString().slice(0, 1000);
+
+  const { error } = await supabase
+    .from("bookings")
+    .update({ numGuests, observations })
+    .eq("id", bookingId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error(error);
+    throw new Error("Booking could not be updated");
+  }
+
+  revalidatePath("/account/reservations");
+  revalidatePath(`/account/reservations/edit/${bookingId}`);
+  redirect("/account/reservations");
 }
