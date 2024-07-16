@@ -1,6 +1,4 @@
-import DateSelector from "@/app/_components/DateSelector";
 import Reservation from "@/app/_components/Reservation";
-import ReservationForm from "@/app/_components/ReservationForm";
 import Spinner from "@/app/_components/Spinner";
 import TextExpander from "@/app/_components/TextExpander";
 import { getCabin, getCabins } from "@/app/_lib/data-service";
@@ -29,12 +27,6 @@ export async function generateMetadata(
   };
 }
 
-export async function generateStaticPaths() {
-  const cabins = await getCabins();
-  return cabins.map((cabin) => ({
-    params: { cabinId: cabin.id.toString() },
-  }));
-}
 
 export default async function Page({ params }: Props) {
   const cabin: Tables<"cabins"> = await getCabin(params.cabinId);
