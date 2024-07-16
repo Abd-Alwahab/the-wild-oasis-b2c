@@ -8,7 +8,7 @@ export const metadata = {
   title: "About",
 };
 
-export const revalidated = 86400; // 24 hours
+export const revalidate = 86400; // 24 hours
 
 export default async function About() {
   const cabins = await getCabins();
