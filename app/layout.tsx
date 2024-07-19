@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       >
         <Header />
 
-        <div className="flex-1 px-8 py-12 grid">
+        <div className="flex-1 px-2 lg:px-8 py-12 grid">
           <ReservationProvider>
             <main className="max-w-7xl mx-auto w-full">{children}</main>
           </ReservationProvider>
